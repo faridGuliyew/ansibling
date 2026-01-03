@@ -1,0 +1,475 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "7c19b9ef98d54ed95b92913ae7c66dac",
+    "entities": [
+      {
+        "tableName": "devices",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deviceId` TEXT NOT NULL, `nickName` TEXT NOT NULL, `username` TEXT NOT NULL, `password` TEXT NOT NULL, `port` INTEGER NOT NULL, `ip` TEXT NOT NULL, PRIMARY KEY(`deviceId`))",
+        "fields": [
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickName",
+            "columnName": "nickName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "password",
+            "columnName": "password",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "port",
+            "columnName": "port",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ip",
+            "columnName": "ip",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "deviceId"
+          ]
+        }
+      },
+      {
+        "tableName": "device_groups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupId` TEXT NOT NULL, `nickName` TEXT NOT NULL, PRIMARY KEY(`groupId`))",
+        "fields": [
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickName",
+            "columnName": "nickName",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "groupId"
+          ]
+        }
+      },
+      {
+        "tableName": "device_group_relations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deviceId` TEXT NOT NULL, `groupId` TEXT NOT NULL, PRIMARY KEY(`deviceId`, `groupId`), FOREIGN KEY(`groupId`) REFERENCES `device_groups`(`groupId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`deviceId`) REFERENCES `devices`(`deviceId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "deviceId",
+            "groupId"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "device_groups",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "groupId"
+            ],
+            "referencedColumns": [
+              "groupId"
+            ]
+          },
+          {
+            "table": "devices",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "deviceId"
+            ],
+            "referencedColumns": [
+              "deviceId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "executions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`executionId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nickName` TEXT NOT NULL, `playbookId` TEXT NOT NULL, `status` TEXT NOT NULL, FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "executionId",
+            "columnName": "executionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickName",
+            "columnName": "nickName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playbookId",
+            "columnName": "playbookId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "executionId"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "playbooks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "playbookId"
+            ],
+            "referencedColumns": [
+              "playbookId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "execution_outputs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`outputId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `executionId` INTEGER NOT NULL, `output` TEXT NOT NULL, `type` TEXT NOT NULL, FOREIGN KEY(`executionId`) REFERENCES `executions`(`executionId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "outputId",
+            "columnName": "outputId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "executionId",
+            "columnName": "executionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "output",
+            "columnName": "output",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "outputId"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "executions",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "executionId"
+            ],
+            "referencedColumns": [
+              "executionId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "variables",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`variableId` TEXT NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`variableId`))",
+        "fields": [
+          {
+            "fieldPath": "variableId",
+            "columnName": "variableId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "variableId"
+          ]
+        }
+      },
+      {
+        "tableName": "scripts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scriptId` TEXT NOT NULL, `name` TEXT NOT NULL, `content` TEXT NOT NULL, PRIMARY KEY(`scriptId`))",
+        "fields": [
+          {
+            "fieldPath": "scriptId",
+            "columnName": "scriptId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "content",
+            "columnName": "content",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "scriptId"
+          ]
+        }
+      },
+      {
+        "tableName": "playbooks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`playbookId` TEXT NOT NULL, `nickName` TEXT NOT NULL, PRIMARY KEY(`playbookId`))",
+        "fields": [
+          {
+            "fieldPath": "playbookId",
+            "columnName": "playbookId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickName",
+            "columnName": "nickName",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "playbookId"
+          ]
+        }
+      },
+      {
+        "tableName": "remote_actions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actionId` TEXT NOT NULL, `playbookId` TEXT NOT NULL, `command` TEXT NOT NULL, `commandType` TEXT NOT NULL, `exceptionBehaviour` TEXT NOT NULL, `order` INTEGER NOT NULL, PRIMARY KEY(`actionId`), FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "actionId",
+            "columnName": "actionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playbookId",
+            "columnName": "playbookId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "command",
+            "columnName": "command",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "commandType",
+            "columnName": "commandType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exceptionBehaviour",
+            "columnName": "exceptionBehaviour",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order",
+            "columnName": "order",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "actionId"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "playbooks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "playbookId"
+            ],
+            "referencedColumns": [
+              "playbookId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "playbook_device_relations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deviceId` TEXT NOT NULL, `playbookId` TEXT NOT NULL, PRIMARY KEY(`deviceId`, `playbookId`), FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`deviceId`) REFERENCES `devices`(`deviceId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playbookId",
+            "columnName": "playbookId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "deviceId",
+            "playbookId"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "playbooks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "playbookId"
+            ],
+            "referencedColumns": [
+              "playbookId"
+            ]
+          },
+          {
+            "table": "devices",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "deviceId"
+            ],
+            "referencedColumns": [
+              "deviceId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "playbook_device_group_relations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupId` TEXT NOT NULL, `playbookId` TEXT NOT NULL, PRIMARY KEY(`groupId`, `playbookId`), FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`groupId`) REFERENCES `device_groups`(`groupId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playbookId",
+            "columnName": "playbookId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "groupId",
+            "playbookId"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "playbooks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "playbookId"
+            ],
+            "referencedColumns": [
+              "playbookId"
+            ]
+          },
+          {
+            "table": "device_groups",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "groupId"
+            ],
+            "referencedColumns": [
+              "groupId"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c19b9ef98d54ed95b92913ae7c66dac')"
+    ]
+  }
+}
