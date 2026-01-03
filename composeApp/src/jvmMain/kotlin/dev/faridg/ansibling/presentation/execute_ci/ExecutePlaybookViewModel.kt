@@ -22,6 +22,7 @@ class ExecutePlaybookViewModel(
     private var executionId = -1L
 
     init {
+        // Create a new execution and start.
         viewModelScope.launch {
             executionId = getExecutionId()
             observeExecutionStatus()
@@ -33,6 +34,16 @@ class ExecutePlaybookViewModel(
     fun startExecution() {
         viewModelScope.launch {
             val variables = loadVariables()
+            val playbook = if (playbook.actions.any { it.globalScriptId != null }) {
+                val scripts = loadScripts()
+                playbook.copy(
+                    actions = playbook.actions.map {
+                        if (it.globalScriptId == null) return@map it
+
+                        it.copy(title = scripts[it.globalScriptId]!!.title, content = scripts[it.globalScriptId]!!.content)
+                    }
+                )
+            } else playbook
 
             try {
                 playbook.devices.forEach { target ->
@@ -84,14 +95,14 @@ class ExecutePlaybookViewModel(
             actions.forEach { action ->
                 insertExecutionOutput(
                     type = StatusType.INFO,
-                    output = "▶ Executing: ${action.command.take(100)}"
+                    output = "▶ Executing: ${action.content.take(100)}"
                 )
                 // Execute command
                 try {
                     // Render jinja template in case there is any.
                     val command = when (action.commandType) {
-                        RemoteActionCommandType.PLAIN -> action.command
-                        RemoteActionCommandType.JINJA -> action.command.renderJinja(variables = variables)
+                        ScriptType.PLAIN -> action.content
+                        ScriptType.JINJA -> action.content.renderJinja(variables = variables)
                     }
                     executor.executeCommand(command) { line, type ->
                         insertExecutionOutput(
@@ -185,6 +196,11 @@ class ExecutePlaybookViewModel(
             .map { it.toDomain() }
             .forEach { vars[it.key] = it.value }
         return vars
+    }
+
+    private suspend fun loadScripts(): Map<String, Script> {
+        return AppDatabase.scriptDao.observeAll().first()
+            .map { it.toDomain() }.associateBy { it.scriptId }
     }
 
     private suspend fun getExecutionId() : Long {

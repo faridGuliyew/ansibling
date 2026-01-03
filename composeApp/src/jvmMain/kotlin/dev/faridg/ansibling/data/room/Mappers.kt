@@ -1,13 +1,13 @@
 package dev.faridg.ansibling.data.room
 
-import dev.faridg.ansibling.data.room.entity.playbook.RemoteActionEntity
+import dev.faridg.ansibling.data.room.entity.playbook.PlaybookScriptEntity
 import dev.faridg.ansibling.data.room.entity.device.DeviceEntity
 import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupEntity
 import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupWithDevicesRelation
 import dev.faridg.ansibling.data.room.entity.playbook.PlaybookWithActionsAndDevicesRelation
 import dev.faridg.ansibling.data.room.entity.script.ScriptEntity
 import dev.faridg.ansibling.data.room.entity.variable.VariableEntity
-import dev.faridg.ansibling.domain.RemoteAction
+import dev.faridg.ansibling.domain.PlaybookScript
 import dev.faridg.ansibling.domain.Device
 import dev.faridg.ansibling.domain.DeviceGroup
 import dev.faridg.ansibling.domain.Playbook
@@ -25,22 +25,26 @@ fun Device.toEntity(): DeviceEntity =
     )
 
 
-fun RemoteActionEntity.toDomain(): RemoteAction =
-    RemoteAction(
-        id = actionId,
+fun PlaybookScriptEntity.toDomain(): PlaybookScript =
+    PlaybookScript(
+        scriptId = scriptId,
         playbookId = playbookId,
-        command = command,
+        globalScriptId = globalScriptId,
+        title = title,
+        content = command,
         commandType = commandType,
         exceptionBehaviour = exceptionBehaviour,
         order = order
     )
 
 
-fun RemoteAction.toEntity(): RemoteActionEntity =
-    RemoteActionEntity(
+fun PlaybookScript.toEntity(): PlaybookScriptEntity =
+    PlaybookScriptEntity(
         playbookId = playbookId,
-        actionId = id,
-        command = command,
+        scriptId = scriptId,
+        globalScriptId = globalScriptId,
+        title = title,
+        command = content,
         commandType = commandType,
         exceptionBehaviour = exceptionBehaviour,
         order = order
@@ -60,15 +64,19 @@ fun Variable.toEntity() = VariableEntity(
 )
 
 fun ScriptEntity.toDomain() = Script(
-    id = scriptId,
-    name = name,
-    content = content
+    scriptId = scriptId,
+    title = title,
+    content = content,
+    type = type,
+    exceptionBehavior = exceptionBehaviour
 )
 
 fun Script.toEntity() = ScriptEntity(
-    scriptId = id,
-    name = name,
-    content = content
+    scriptId = scriptId,
+    title = title,
+    content = content,
+    type = type,
+    exceptionBehaviour = exceptionBehavior
 )
 
 fun DeviceEntity.toDomain(): Device = Device(

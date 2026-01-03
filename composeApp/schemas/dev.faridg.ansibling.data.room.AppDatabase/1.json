@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7c19b9ef98d54ed95b92913ae7c66dac",
+    "identityHash": "98e6b70b1cd39a79d3ef4785123851c0",
     "entities": [
       {
         "tableName": "devices",
@@ -255,7 +255,7 @@
       },
       {
         "tableName": "scripts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scriptId` TEXT NOT NULL, `name` TEXT NOT NULL, `content` TEXT NOT NULL, PRIMARY KEY(`scriptId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scriptId` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `type` TEXT NOT NULL, `exceptionBehaviour` TEXT NOT NULL, PRIMARY KEY(`scriptId`))",
         "fields": [
           {
             "fieldPath": "scriptId",
@@ -264,14 +264,26 @@
             "notNull": true
           },
           {
-            "fieldPath": "name",
-            "columnName": "name",
+            "fieldPath": "title",
+            "columnName": "title",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "content",
             "columnName": "content",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exceptionBehaviour",
+            "columnName": "exceptionBehaviour",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -309,17 +321,28 @@
       },
       {
         "tableName": "remote_actions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actionId` TEXT NOT NULL, `playbookId` TEXT NOT NULL, `command` TEXT NOT NULL, `commandType` TEXT NOT NULL, `exceptionBehaviour` TEXT NOT NULL, `order` INTEGER NOT NULL, PRIMARY KEY(`actionId`), FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scriptId` TEXT NOT NULL, `playbookId` TEXT NOT NULL, `globalScriptId` TEXT, `title` TEXT NOT NULL, `command` TEXT NOT NULL, `commandType` TEXT NOT NULL, `exceptionBehaviour` TEXT NOT NULL, `order` INTEGER NOT NULL, PRIMARY KEY(`scriptId`), FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`globalScriptId`) REFERENCES `scripts`(`scriptId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "actionId",
-            "columnName": "actionId",
+            "fieldPath": "scriptId",
+            "columnName": "scriptId",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "playbookId",
             "columnName": "playbookId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "globalScriptId",
+            "columnName": "globalScriptId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -351,7 +374,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "actionId"
+            "scriptId"
           ]
         },
         "foreignKeys": [
@@ -364,6 +387,17 @@
             ],
             "referencedColumns": [
               "playbookId"
+            ]
+          },
+          {
+            "table": "scripts",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "globalScriptId"
+            ],
+            "referencedColumns": [
+              "scriptId"
             ]
           }
         ]
@@ -469,7 +503,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c19b9ef98d54ed95b92913ae7c66dac')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '98e6b70b1cd39a79d3ef4785123851c0')"
     ]
   }
 }

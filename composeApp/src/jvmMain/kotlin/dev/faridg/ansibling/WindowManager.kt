@@ -12,7 +12,7 @@ sealed interface WindowRoute {
     data class EditDeviceGroup(val group: DeviceGroup, override val title: String = group.nickName) : WindowRoute
     data class EditPlaybook(val playbook: Playbook, override val title: String = playbook.nickName) : WindowRoute
     data class ExecutePlaybook(val playbook: Playbook, override val title: String = playbook.nickName) : WindowRoute
-    data class ScriptEditor(val script: Script?, override val title: String = script?.name.orEmpty()) : WindowRoute
+    data class ScriptEditor(val script: Script?, override val title: String = script?.title.orEmpty()) : WindowRoute
 }
 
 class WindowManager {

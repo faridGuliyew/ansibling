@@ -48,7 +48,7 @@ fun ScriptsTab() {
                     },
                     onDelete = {
                         scope.launch {
-                            AppDatabase.scriptDao.delete(script.id)
+                            AppDatabase.scriptDao.delete(script.scriptId)
                         }
                     })
             }

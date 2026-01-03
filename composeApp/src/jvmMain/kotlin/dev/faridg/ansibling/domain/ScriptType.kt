@@ -1,5 +1,5 @@
 package dev.faridg.ansibling.domain
 
-enum class RemoteActionCommandType {
+enum class ScriptType {
     PLAIN, JINJA
 }

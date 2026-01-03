@@ -3,16 +3,18 @@ package dev.faridg.ansibling.domain
 data class Playbook(
     val id: String,
     val nickName: String,
-    val actions: List<RemoteAction>,
+    val actions: List<PlaybookScript>,
     val devices: List<PlaybookDevice>
 )
 
 
-data class RemoteAction(
-    val id: String,
+data class PlaybookScript(
+    val scriptId: String,
     val playbookId: String,
-    val command: String,
-    val commandType: RemoteActionCommandType,
+    val globalScriptId: String?,
+    val title: String,
+    val content: String,
+    val commandType: ScriptType,
     val exceptionBehaviour: ExceptionBehavior,
     val order: Int
 )

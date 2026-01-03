@@ -13,7 +13,7 @@ data class PlaybookWithActionsAndDevicesRelation(
         parentColumn = "playbookId",
         entityColumn = "playbookId"
     )
-    val actions: List<RemoteActionEntity>,
+    val actions: List<PlaybookScriptEntity>,
     @Relation(
         parentColumn = "playbookId",
         entityColumn = "deviceId",

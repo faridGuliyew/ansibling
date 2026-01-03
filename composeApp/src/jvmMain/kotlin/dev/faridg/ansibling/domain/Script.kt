@@ -1,7 +1,9 @@
 package dev.faridg.ansibling.domain
 
 data class Script(
-    val id: String,
-    val name: String,
-    val content: String
+    val scriptId: String,
+    val title: String,
+    val content: String,
+    val type: ScriptType,
+    val exceptionBehavior: ExceptionBehavior
 )

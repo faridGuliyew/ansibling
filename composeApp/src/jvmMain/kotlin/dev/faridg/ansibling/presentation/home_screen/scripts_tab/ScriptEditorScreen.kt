@@ -3,13 +3,19 @@ package dev.faridg.ansibling.presentation.home_screen.scripts_tab
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.faridg.ansibling.data.room.AppDatabase
 import dev.faridg.ansibling.data.room.toEntity
+import dev.faridg.ansibling.domain.ExceptionBehavior
 import dev.faridg.ansibling.domain.Script
+import dev.faridg.ansibling.domain.ScriptType
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -19,7 +25,7 @@ fun ScriptEditorScreen(
     onExit: () -> Unit,
 ) {
     val scriptUiModel = remember {
-        (script ?: Script(id = UUID.randomUUID().toString(),"", "")).toUiModel()
+        (script ?: Script(scriptId = UUID.randomUUID().toString(),"", "", ScriptType.PLAIN, exceptionBehavior = ExceptionBehavior.IGNORE)).toUiModel()
     }
     val scope = rememberCoroutineScope()
 
@@ -59,6 +65,56 @@ fun ScriptEditorScreen(
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 4
                 )
+
+                // ---- expanded panel ----
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Exception behavior
+                    var dropdownExpanded by remember { mutableStateOf(false) }
+
+                    OutlinedButton(
+                        onClick = { dropdownExpanded = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Exception behaviour: ${scriptUiModel.exceptionBehaviour.value}")
+                    }
+
+                    DropdownMenu(
+                        expanded = dropdownExpanded,
+                        onDismissRequest = { dropdownExpanded = false }
+                    ) {
+                        ExceptionBehavior.entries.forEach { behavior ->
+                            DropdownMenuItem(
+                                text = { Text(behavior.name) },
+                                onClick = {
+                                    scriptUiModel.exceptionBehaviour.value = behavior
+                                    dropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = scriptUiModel.type.value == ScriptType.JINJA,
+                            onCheckedChange = {
+                                scriptUiModel.type.let {
+                                    when (it.value) {
+                                        ScriptType.PLAIN -> it.value =
+                                            ScriptType.JINJA
+
+                                        ScriptType.JINJA -> it.value =
+                                            ScriptType.PLAIN
+                                    }
+                                }
+                            }
+                        )
+                        Text("Render as jinja")
+                    }
+                }
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)

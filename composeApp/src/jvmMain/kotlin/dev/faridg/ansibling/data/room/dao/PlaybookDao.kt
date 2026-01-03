@@ -10,7 +10,7 @@ import dev.faridg.ansibling.data.room.entity.playbook.PlaybookDeviceGroupRelatio
 import dev.faridg.ansibling.data.room.entity.playbook.PlaybookDeviceRelationEntity
 import dev.faridg.ansibling.data.room.entity.playbook.PlaybookEntity
 import dev.faridg.ansibling.data.room.entity.playbook.PlaybookWithActionsAndDevicesRelation
-import dev.faridg.ansibling.data.room.entity.playbook.RemoteActionEntity
+import dev.faridg.ansibling.data.room.entity.playbook.PlaybookScriptEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -27,7 +27,7 @@ interface PlaybookDao {
     fun getPlaybooksWithActions(): Flow<List<PlaybookWithActionsAndDevicesRelation>>
 
     @Upsert
-    suspend fun insertRemoteActions(actions: List<RemoteActionEntity>)
+    suspend fun insertRemoteActions(actions: List<PlaybookScriptEntity>)
 
     @Upsert
     suspend fun insertPlaybook(playbook: PlaybookEntity)

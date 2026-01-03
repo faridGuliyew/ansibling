@@ -54,7 +54,7 @@ fun ScriptItem(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = item.name,
+                        text = item.title,
                         style = MaterialTheme.typography.titleMedium
                     )
 
@@ -124,7 +124,7 @@ fun ScriptItem(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = item.name,
+                        text = item.title,
                         style = MaterialTheme.typography.titleMedium
                     )
 

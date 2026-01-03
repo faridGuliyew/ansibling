@@ -9,7 +9,7 @@ import dev.faridg.ansibling.data.room.dao.DeviceDao
 import dev.faridg.ansibling.data.room.dao.PlaybookDao
 import dev.faridg.ansibling.data.room.dao.ScriptDao
 import dev.faridg.ansibling.data.room.dao.VariableDao
-import dev.faridg.ansibling.data.room.entity.playbook.RemoteActionEntity
+import dev.faridg.ansibling.data.room.entity.playbook.PlaybookScriptEntity
 import dev.faridg.ansibling.data.room.entity.execution.ExecutionEntity
 import dev.faridg.ansibling.data.room.entity.device.DeviceEntity
 import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupEntity
@@ -30,7 +30,7 @@ import kotlinx.coroutines.Dispatchers
         VariableEntity::class,
         ScriptEntity::class,
         PlaybookEntity::class,
-        RemoteActionEntity::class,
+        PlaybookScriptEntity::class,
         PlaybookDeviceRelationEntity::class, PlaybookDeviceGroupRelationEntity::class
     ],
     version = 1
