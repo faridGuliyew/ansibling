@@ -11,10 +11,10 @@ data class Playbook(
 data class PlaybookScript(
     val scriptId: String,
     val playbookId: String,
-    val globalScriptId: String?,
+    val isGlobal: Boolean,
     val title: String,
     val content: String,
-    val commandType: ScriptType,
+    val type: ScriptType,
     val exceptionBehaviour: ExceptionBehavior,
     val order: Int
 )

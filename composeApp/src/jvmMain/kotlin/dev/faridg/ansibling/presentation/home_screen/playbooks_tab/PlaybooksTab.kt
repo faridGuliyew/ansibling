@@ -10,8 +10,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.faridg.ansibling.WindowRoute
 import dev.faridg.ansibling.ui_kit.playbook.PlaybookItem
 import dev.faridg.ansibling.ui_kit.tab.TabScreen
+import dev.faridg.ansibling.windowManager
 
 @Composable
 fun PlaybooksTab() {
@@ -29,6 +31,12 @@ fun PlaybooksTab() {
             items(playbooks) { playbook ->
                 PlaybookItem(
                     playbook = playbook,
+                    onEdit = {
+                        vm.editPlaybook(playbook.id)
+                    },
+                    onExecute = {
+                        vm.executePlaybook(playbook.id)
+                    },
                     onDelete = {
                         vm.deletePlaybook(playbook.id)
                     }

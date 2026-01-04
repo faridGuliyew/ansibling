@@ -9,15 +9,16 @@ import dev.faridg.ansibling.data.room.dao.DeviceDao
 import dev.faridg.ansibling.data.room.dao.PlaybookDao
 import dev.faridg.ansibling.data.room.dao.ScriptDao
 import dev.faridg.ansibling.data.room.dao.VariableDao
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookScriptEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookLocalScriptEntity
 import dev.faridg.ansibling.data.room.entity.execution.ExecutionEntity
 import dev.faridg.ansibling.data.room.entity.device.DeviceEntity
 import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupEntity
 import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupRelationEntity
 import dev.faridg.ansibling.data.room.entity.execution.ExecutionOutputEntity
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookDeviceGroupRelationEntity
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookDeviceRelationEntity
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookDeviceGroupRelationEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookDeviceRelationEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookGlobalScriptRelationEntity
 import dev.faridg.ansibling.data.room.entity.script.ScriptEntity
 import dev.faridg.ansibling.data.room.entity.variable.VariableEntity
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +31,8 @@ import kotlinx.coroutines.Dispatchers
         VariableEntity::class,
         ScriptEntity::class,
         PlaybookEntity::class,
-        PlaybookScriptEntity::class,
-        PlaybookDeviceRelationEntity::class, PlaybookDeviceGroupRelationEntity::class
+        PlaybookLocalScriptEntity::class,
+        PlaybookDeviceRelationEntity::class, PlaybookDeviceGroupRelationEntity::class, PlaybookGlobalScriptRelationEntity::class
     ],
     version = 1
 )

@@ -3,7 +3,7 @@ package dev.faridg.ansibling.data.room.entity.execution
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookEntity
 import dev.faridg.ansibling.domain.TaskStatusType
 
 @Entity(

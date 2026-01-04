@@ -1,37 +1,29 @@
-package dev.faridg.ansibling.data.room.entity.playbook
+package dev.faridg.ansibling.data.room.entity.playbook.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import dev.faridg.ansibling.data.room.entity.script.ScriptEntity
 import dev.faridg.ansibling.domain.ExceptionBehavior
 import dev.faridg.ansibling.domain.ScriptType
 
 @Entity(
-    tableName = "remote_actions",
+    tableName = "playbook_local_scripts",
     foreignKeys = [
         ForeignKey(
             entity = PlaybookEntity::class,
             parentColumns = ["playbookId"],
             childColumns = ["playbookId"],
             onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = ScriptEntity::class,
-            parentColumns = ["scriptId"],
-            childColumns = ["globalScriptId"],
-            onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class PlaybookScriptEntity(
+data class PlaybookLocalScriptEntity(
     @PrimaryKey
     val scriptId: String,
     val playbookId: String,
-    val globalScriptId: String?,
     val title: String,
-    val command: String,
-    val commandType: ScriptType,
+    val content: String,
+    val type: ScriptType,
     val exceptionBehaviour: ExceptionBehavior,
     val order: Int
 )

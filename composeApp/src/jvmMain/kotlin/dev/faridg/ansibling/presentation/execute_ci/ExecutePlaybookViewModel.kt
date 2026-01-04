@@ -34,16 +34,17 @@ class ExecutePlaybookViewModel(
     fun startExecution() {
         viewModelScope.launch {
             val variables = loadVariables()
-            val playbook = if (playbook.actions.any { it.globalScriptId != null }) {
-                val scripts = loadScripts()
-                playbook.copy(
-                    actions = playbook.actions.map {
-                        if (it.globalScriptId == null) return@map it
-
-                        it.copy(title = scripts[it.globalScriptId]!!.title, content = scripts[it.globalScriptId]!!.content)
-                    }
-                )
-            } else playbook
+            println("Executing playbook: $playbook")
+//            val playbook = if (playbook.actions.any { it.globalScriptId != null }) {
+//                val scripts = loadScripts()
+//                playbook.copy(
+//                    actions = playbook.actions.map {
+//                        if (it.globalScriptId == null) return@map it
+//
+//                        it.copy(title = scripts[it.globalScriptId]!!.title, content = scripts[it.globalScriptId]!!.content)
+//                    }
+//                )
+//            } else playbook
 
             try {
                 playbook.devices.forEach { target ->
@@ -95,12 +96,12 @@ class ExecutePlaybookViewModel(
             actions.forEach { action ->
                 insertExecutionOutput(
                     type = StatusType.INFO,
-                    output = "▶ Executing: ${action.content.take(100)}"
+                    output = "▶ Executing: ${action.title.ifBlank { "Script #${action.order}" }}"
                 )
                 // Execute command
                 try {
                     // Render jinja template in case there is any.
-                    val command = when (action.commandType) {
+                    val command = when (action.type) {
                         ScriptType.PLAIN -> action.content
                         ScriptType.JINJA -> action.content.renderJinja(variables = variables)
                     }

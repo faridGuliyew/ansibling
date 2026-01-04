@@ -30,6 +30,8 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun PlaybookItem(
     playbook: Playbook,
+    onExecute: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
@@ -59,20 +61,16 @@ fun PlaybookItem(
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    Text(
-                        text = "${playbook.devices.size} device(s) • ${playbook.actions.size} action(s)",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+//                    Text(
+//                        text = "${playbook.devices.size} device(s) • ${playbook.actions.size} action(s)",
+//                        style = MaterialTheme.typography.labelSmall,
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant
+//                    )
                 }
 
                 // ---- Primary action ----
                 Button(
-                    onClick = {
-                        windowManager.push(
-                            WindowRoute.ExecutePlaybook(playbook)
-                        )
-                    },
+                    onClick = onExecute,
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
                 ) {
                     Text("Run")
@@ -91,11 +89,7 @@ fun PlaybookItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(
-                    onClick = {
-                        windowManager.push(
-                            WindowRoute.EditPlaybook(playbook)
-                        )
-                    }
+                    onClick = onEdit
                 ) {
                     Text("Edit")
                 }

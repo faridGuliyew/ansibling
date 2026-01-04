@@ -18,9 +18,10 @@ import ansibling.composeapp.generated.resources.Res
 import ansibling.composeapp.generated.resources.ic_add
 import ansibling.composeapp.generated.resources.ic_script
 import dev.faridg.ansibling.data.room.AppDatabase
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookDeviceGroupRelationEntity
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookDeviceRelationEntity
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookDeviceGroupRelationEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookDeviceRelationEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookGlobalScriptRelationEntity
 import dev.faridg.ansibling.data.room.toDomain
 import dev.faridg.ansibling.data.room.toEntity
 import dev.faridg.ansibling.domain.*
@@ -66,22 +67,8 @@ fun EditPlaybookScreen(
     }
     LaunchedEffect(Unit) {
         val globalScripts = AppDatabase.scriptDao.observeAll().first()
-        val indexedGlobalScripts = globalScripts.associateBy { it.scriptId }
         allScripts.clear()
         allScripts.addAll(globalScripts.map { it.toDomain() })
-
-        // Check if any script needs to be updated.
-        val includesGlobalScript = playbookUiModel.scripts.any { it.globalScriptId != null }
-        if (!includesGlobalScript) return@LaunchedEffect
-
-        playbookUiModel.scripts.forEach {
-            if (it.globalScriptId == null) return@forEach
-
-            it.apply {
-                // TODO - add any updates that need to be reflected here.
-                title.value = indexedGlobalScripts[globalScriptId]!!.title
-            }
-        }
     }
 
     Column(
@@ -105,7 +92,7 @@ fun EditPlaybookScreen(
                 Text(text = "Added devices (${playbookUiModel.devices.size})")
             }
         ) {
-            LazyColumn (
+            LazyColumn(
                 modifier = Modifier.heightIn(max = 500.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -118,6 +105,7 @@ fun EditPlaybookScreen(
                                 playbookUiModel.devices.removeAt(index)
                             }
                         )
+
                         is DeviceGroup -> DeviceGroupItem(
                             group = it,
                             onIconClick = {
@@ -154,6 +142,7 @@ fun EditPlaybookScreen(
                                 },
                                 iconRes = Res.drawable.ic_add
                             )
+
                             is DeviceGroup -> DeviceGroupItem(
                                 group = it,
                                 onIconClick = {
@@ -208,7 +197,7 @@ fun EditPlaybookScreen(
                             playbookUiModel.scripts.add(
                                 it.toPlaybookScriptUiModel(
                                     playbookId = playbookUiModel.playbookId,
-                                    order = (playbookUiModel.scripts.maxOfOrNull { it.order } ?: 0) + 1
+                                    order = (playbookUiModel.scripts.maxOfOrNull { it.order.value } ?: 0) + 1
                                 )
                             )
                         }
@@ -225,12 +214,12 @@ fun EditPlaybookScreen(
                     PlaybookScriptUiModel(
                         id = UUID.randomUUID().toString(),
                         playbookId = playbook.id,
-                        globalScriptId = null,
+                        isGlobal = false,
                         content = mutableStateOf(""),
-                        title = mutableStateOf("Do something"),
+                        title = mutableStateOf(""),
                         commandType = mutableStateOf(ScriptType.PLAIN),
                         exceptionBehavior = mutableStateOf(ExceptionBehavior.IGNORE),
-                        order = (playbookUiModel.scripts.maxOfOrNull { it.order } ?: 0) + 1
+                        order = mutableStateOf((playbookUiModel.scripts.maxOfOrNull { it.order.value } ?: 0) + 1)
                     )
                 )
             },
@@ -247,22 +236,34 @@ fun EditPlaybookScreen(
         Button(
             onClick = {
                 scope.launch {
-                    AppDatabase.playbookDao.deleteRemoteActionsForPlaybook(playbook.id)
+                    AppDatabase.playbookDao.deleteAllPlaybookScripts(playbook.id)
                     AppDatabase.playbookDao.deletePlaybookDevices(playbook.id)
                     AppDatabase.playbookDao.deletePlaybookDeviceGroups(playbook.id)
 
-                    AppDatabase.playbookDao.insertPlaybook(PlaybookEntity(
-                        playbookId = playbookUiModel.id,
-                        nickName = playbookUiModel.nickname.value
-                    ))
-                    AppDatabase.playbookDao.insertRemoteActions(
-                        actions = playbookUiModel.scripts.map { it.toDomain().toEntity() }
+                    AppDatabase.playbookDao.insertPlaybook(
+                        PlaybookEntity(
+                            playbookId = playbookUiModel.id,
+                            nickName = playbookUiModel.nickname.value
+                        )
+                    )
+                    val scripts = playbookUiModel.scripts.groupBy { it.isGlobal }
+
+                    AppDatabase.playbookDao.insertLocalScripts(
+                        scripts = scripts[false].orEmpty().map { it.toDomain().toEntity() }
+                    )
+                    AppDatabase.playbookDao.insertGlobalScripts(
+                        relations = scripts[true].orEmpty().map {
+                            PlaybookGlobalScriptRelationEntity(
+                                scriptId = it.id, playbookId = playbookUiModel.id, order = it.order.value
+                            )
+                        }
                     )
                     playbookUiModel.devices.forEach {
                         when (it) {
                             is Device -> AppDatabase.playbookDao.insertPlaybookDevice(
                                 relation = PlaybookDeviceRelationEntity(it.id, playbookUiModel.id)
                             )
+
                             is DeviceGroup -> AppDatabase.playbookDao.insertPlaybookDeviceGroup(
                                 relation = PlaybookDeviceGroupRelationEntity(it.id, playbookUiModel.id)
                             )
@@ -288,8 +289,13 @@ fun PlaybookScriptItem(
         runCatching {
             playbookUiModel.scripts.apply {
                 val prev = this[index - 1]
+                val curr = this[index]
                 this[index - 1] = this[index]
                 this[index] = prev
+
+                val prevOrder = prev.order.value
+                prev.order.value = curr.order.value
+                curr.order.value = prevOrder
             }
         }
     }
@@ -297,19 +303,25 @@ fun PlaybookScriptItem(
         runCatching {
             playbookUiModel.scripts.apply {
                 val next = this[index + 1]
+                val curr = this[index]
                 this[index + 1] = this[index]
                 this[index] = next
+
+                val nextOrder = next.order.value
+                next.order.value = curr.order.value
+                curr.order.value = nextOrder
             }
         }
     }
-    when (scriptUiModel.globalScriptId) {
-        null -> PlaybookLocalScriptItem(
+    when (scriptUiModel.isGlobal) {
+        false -> PlaybookLocalScriptItem(
             scriptUiModel = scriptUiModel,
             onRemove = { playbookUiModel.scripts.removeAt(index) },
             onMoveUp = onMoveUp,
             onMoveDown = onMoveDown
         )
-        else -> PlaybookGlobalScriptItem(
+
+        true -> PlaybookGlobalScriptItem(
             scriptUiModel = scriptUiModel,
             onRemove = { playbookUiModel.scripts.removeAt(index) },
             onMoveUp = onMoveUp,
@@ -412,7 +424,7 @@ fun PlaybookLocalScriptItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = scriptUiModel.commandType.value == ScriptType.JINJA,
-                        onCheckedChange =  {
+                        onCheckedChange = {
                             scriptUiModel.commandType.value =
                                 if (it) ScriptType.JINJA else ScriptType.PLAIN
                         }

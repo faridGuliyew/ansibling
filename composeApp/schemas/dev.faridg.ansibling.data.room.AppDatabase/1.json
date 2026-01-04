@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "98e6b70b1cd39a79d3ef4785123851c0",
+    "identityHash": "514ab1e6dc1d17c6e6019756ca07ce0c",
     "entities": [
       {
         "tableName": "devices",
@@ -320,8 +320,8 @@
         }
       },
       {
-        "tableName": "remote_actions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scriptId` TEXT NOT NULL, `playbookId` TEXT NOT NULL, `globalScriptId` TEXT, `title` TEXT NOT NULL, `command` TEXT NOT NULL, `commandType` TEXT NOT NULL, `exceptionBehaviour` TEXT NOT NULL, `order` INTEGER NOT NULL, PRIMARY KEY(`scriptId`), FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`globalScriptId`) REFERENCES `scripts`(`scriptId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "playbook_local_scripts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scriptId` TEXT NOT NULL, `playbookId` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `type` TEXT NOT NULL, `exceptionBehaviour` TEXT NOT NULL, `order` INTEGER NOT NULL, PRIMARY KEY(`scriptId`), FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "scriptId",
@@ -336,25 +336,20 @@
             "notNull": true
           },
           {
-            "fieldPath": "globalScriptId",
-            "columnName": "globalScriptId",
-            "affinity": "TEXT"
-          },
-          {
             "fieldPath": "title",
             "columnName": "title",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "command",
-            "columnName": "command",
+            "fieldPath": "content",
+            "columnName": "content",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "commandType",
-            "columnName": "commandType",
+            "fieldPath": "type",
+            "columnName": "type",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -387,17 +382,6 @@
             ],
             "referencedColumns": [
               "playbookId"
-            ]
-          },
-          {
-            "table": "scripts",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "globalScriptId"
-            ],
-            "referencedColumns": [
-              "scriptId"
             ]
           }
         ]
@@ -499,11 +483,67 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "playbook_global_scripts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scriptId` TEXT NOT NULL, `playbookId` TEXT NOT NULL, `order` INTEGER NOT NULL, PRIMARY KEY(`scriptId`, `playbookId`, `order`), FOREIGN KEY(`playbookId`) REFERENCES `playbooks`(`playbookId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`scriptId`) REFERENCES `scripts`(`scriptId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "scriptId",
+            "columnName": "scriptId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playbookId",
+            "columnName": "playbookId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order",
+            "columnName": "order",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "scriptId",
+            "playbookId",
+            "order"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "playbooks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "playbookId"
+            ],
+            "referencedColumns": [
+              "playbookId"
+            ]
+          },
+          {
+            "table": "scripts",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "scriptId"
+            ],
+            "referencedColumns": [
+              "scriptId"
+            ]
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '98e6b70b1cd39a79d3ef4785123851c0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '514ab1e6dc1d17c6e6019756ca07ce0c')"
     ]
   }
 }

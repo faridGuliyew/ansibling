@@ -2,10 +2,12 @@ package dev.faridg.ansibling.presentation.home_screen.playbooks_tab
 
 
 import androidx.lifecycle.ViewModel
+import dev.faridg.ansibling.WindowRoute
 import dev.faridg.ansibling.data.room.AppDatabase
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookEntity
 import dev.faridg.ansibling.data.room.toDomain
 import dev.faridg.ansibling.domain.Playbook
+import dev.faridg.ansibling.windowManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,9 +27,16 @@ class PlaybooksViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             AppDatabase.playbookDao
-                .getPlaybooksWithActions()
+                .getPlaybooks()
                 .collectLatest { entities ->
-                    _playbooks.value = entities.map { it.toDomain() }
+                    _playbooks.value = entities.map {
+                        Playbook(
+                            id = it.playbookId,
+                            nickName = it.nickName,
+                            actions = emptyList(),
+                            devices = emptyList()
+                        )
+                    }
                 }
         }
     }
@@ -46,6 +55,25 @@ class PlaybooksViewModel : ViewModel() {
     fun deletePlaybook(playbookId: String) {
         viewModelScope.launch {
             AppDatabase.playbookDao.deletePlaybook(playbookId)
+        }
+    }
+
+    fun editPlaybook(playbookId: String) {
+        viewModelScope.launch {
+            val fullPlaybook = AppDatabase.playbookDao.getFullPlaybookRelation(playbookId)
+            println("Start editing $fullPlaybook")
+            windowManager.push(
+                WindowRoute.EditPlaybook(fullPlaybook.toDomain())
+            )
+        }
+    }
+
+    fun executePlaybook(playbookId: String) {
+        viewModelScope.launch {
+            val fullPlaybook = AppDatabase.playbookDao.getFullPlaybookRelation(playbookId)
+            windowManager.push(
+                WindowRoute.ExecutePlaybook(fullPlaybook.toDomain())
+            )
         }
     }
 }

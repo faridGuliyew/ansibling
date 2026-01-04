@@ -1,10 +1,11 @@
 package dev.faridg.ansibling.data.room
 
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookScriptEntity
+import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookLocalScriptEntity
 import dev.faridg.ansibling.data.room.entity.device.DeviceEntity
 import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupEntity
 import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupWithDevicesRelation
-import dev.faridg.ansibling.data.room.entity.playbook.PlaybookWithActionsAndDevicesRelation
+import dev.faridg.ansibling.data.room.entity.playbook.FullPlaybookRelation
+import dev.faridg.ansibling.data.room.entity.playbook.PlaybookGlobalScriptRelation
 import dev.faridg.ansibling.data.room.entity.script.ScriptEntity
 import dev.faridg.ansibling.data.room.entity.variable.VariableEntity
 import dev.faridg.ansibling.domain.PlaybookScript
@@ -25,27 +26,39 @@ fun Device.toEntity(): DeviceEntity =
     )
 
 
-fun PlaybookScriptEntity.toDomain(): PlaybookScript =
+fun PlaybookLocalScriptEntity.toDomain(): PlaybookScript =
     PlaybookScript(
         scriptId = scriptId,
         playbookId = playbookId,
-        globalScriptId = globalScriptId,
         title = title,
-        content = command,
-        commandType = commandType,
+        content = content,
+        type = type,
         exceptionBehaviour = exceptionBehaviour,
-        order = order
+        order = order,
+        isGlobal = false
+    )
+
+fun PlaybookGlobalScriptRelation.toPlaybookDomain(
+): PlaybookScript =
+    PlaybookScript(
+        scriptId = relation.scriptId,
+        playbookId = relation.playbookId,
+        title = script.title,
+        content = script.content,
+        type = script.type,
+        exceptionBehaviour = script.exceptionBehaviour,
+        order = relation.order,
+        isGlobal = true
     )
 
 
-fun PlaybookScript.toEntity(): PlaybookScriptEntity =
-    PlaybookScriptEntity(
+fun PlaybookScript.toEntity(): PlaybookLocalScriptEntity =
+    PlaybookLocalScriptEntity(
         playbookId = playbookId,
         scriptId = scriptId,
-        globalScriptId = globalScriptId,
         title = title,
-        command = content,
-        commandType = commandType,
+        content = content,
+        type = type,
         exceptionBehaviour = exceptionBehaviour,
         order = order
     )
@@ -102,10 +115,10 @@ fun DeviceGroup.toEntity() = DeviceGroupWithDevicesRelation(
     devices = devices.map { it.toEntity() }
 )
 
-fun PlaybookWithActionsAndDevicesRelation.toDomain() = Playbook(
+fun FullPlaybookRelation.toDomain() = Playbook(
     id = playbook.playbookId,
     nickName = playbook.nickName,
-    actions = actions.map { it.toDomain() },
+    actions = (localScripts.map { it.toDomain() } + globalScripts.map { it.toPlaybookDomain() }).sortedBy { it.order },
     devices = devices.map { it.toDomain() } + deviceGroups.map {
         DeviceGroup(
             id = it.groupId,

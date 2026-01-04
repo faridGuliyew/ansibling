@@ -31,36 +31,36 @@ fun Playbook.toUiModel() = PlaybookUiModel(
 data class PlaybookScriptUiModel(
     val id: String,
     val playbookId: String,
-    val globalScriptId: String?,
+    val isGlobal: Boolean,
     val title: MutableState<String>,
     val content: MutableState<String>,
     val commandType: MutableState<ScriptType>,
     val exceptionBehavior: MutableState<ExceptionBehavior>,
-    val order: Int,
+    val order: MutableState<Int>,
     val expanded: MutableState<Boolean> = mutableStateOf(false)
 )
 
 fun PlaybookScript.toUiModel() = PlaybookScriptUiModel(
     id = scriptId,
     playbookId = playbookId,
-    globalScriptId = globalScriptId,
+    isGlobal = isGlobal,
     title = mutableStateOf(title),
     content = mutableStateOf(content),
-    commandType = mutableStateOf(commandType),
+    commandType = mutableStateOf(type),
     exceptionBehavior = mutableStateOf(exceptionBehaviour),
-    order = order
+    order = mutableStateOf(order)
 )
 
 fun PlaybookScriptUiModel.toDomain(): PlaybookScript {
     return PlaybookScript(
         scriptId = id,
         playbookId = playbookId,
-        globalScriptId = globalScriptId,
+        isGlobal = isGlobal,
         title = title.value,
         content = content.value,
-        commandType = commandType.value,
+        type = commandType.value,
         exceptionBehaviour = exceptionBehavior.value,
-        order = order
+        order = order.value
     )
 }
 
@@ -68,20 +68,20 @@ fun Script.toPlaybookScriptUiModel(
     playbookId: String,
     order: Int
 ) = PlaybookScriptUiModel(
-    id = UUID.randomUUID().toString(),
+    id = scriptId,
     playbookId = playbookId,
-    globalScriptId = scriptId,
+    isGlobal = true,
     title = mutableStateOf(title),
     content = mutableStateOf(content),
     commandType = mutableStateOf(type),
     exceptionBehavior = mutableStateOf(exceptionBehavior),
-    order = order
+    order = mutableStateOf(order)
 )
 
-fun PlaybookScriptUiModel.toScript() = Script(
-    scriptId = globalScriptId ?: error("globalScriptId is required!"),
-    title = title.value,
-    content = content.value,
-    type = commandType.value,
-    exceptionBehavior = exceptionBehavior.value
-)
+//fun PlaybookScriptUiModel.toScript() = Script(
+//    scriptId = globalScriptId ?: error("globalScriptId is required!"),
+//    title = title.value,
+//    content = content.value,
+//    type = commandType.value,
+//    exceptionBehavior = exceptionBehavior.value
+//)
