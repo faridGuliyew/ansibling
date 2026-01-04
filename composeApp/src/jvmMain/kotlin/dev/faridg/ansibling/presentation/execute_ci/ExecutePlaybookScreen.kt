@@ -1,12 +1,16 @@
 package dev.faridg.ansibling.presentation.execute_ci
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -18,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.faridg.ansibling.data.room.entity.execution.ExecutionOutputEntity
+import dev.faridg.ansibling.domain.Device
+import dev.faridg.ansibling.domain.DeviceGroup
 import dev.faridg.ansibling.domain.TaskStatusType
 import dev.faridg.ansibling.domain.Playbook
 import dev.faridg.ansibling.domain.StatusType
@@ -29,7 +35,7 @@ fun ExecutePlaybookScreen(
     val vm = remember { ExecutePlaybookViewModel(playbook) }
 
     val execution by vm.execution.collectAsStateWithLifecycle()
-    val outputs by vm.outputs.collectAsStateWithLifecycle()
+    val outputs = vm.outputs //.collectAsStateWithLifecycle()
     val progress by vm.progress.collectAsState(initial = 0f)
 
     Column(
@@ -84,16 +90,93 @@ fun ExecutePlaybookScreen(
                 .background(Color(0xFF0E0E0E), RoundedCornerShape(12.dp))
                 .padding(12.dp)
         ) {
-            val state = rememberLazyListState()
-            LaunchedEffect(outputs.size) {
-                if (outputs.isEmpty()) return@LaunchedEffect
-                state.requestScrollToItem(outputs.lastIndex)
-            }
-            LazyColumn (
-                state = state
+            Column (
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(outputs) {
-                    OutputRow(it)
+                outputs.forEach { it ->
+                    GroupOutputCard(
+                        group = it.key,
+                        deviceOutputMap = it.value
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupOutputCard(
+    group: DeviceGroup?,
+    deviceOutputMap: Map<Device?, List<ExecutionOutputEntity>>
+) {
+    val groupName = group?.nickName ?: "Default"
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+//                .verticalScroll(rememberScrollState())
+            ,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            // ---- Group title ----
+            Text(
+                text = groupName,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            // ---- Devices ----
+            deviceOutputMap.forEach { (device, outputs) ->
+                DeviceOutputCard(
+                    device = device,
+                    outputs = outputs
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeviceOutputCard(
+    device: Device?,
+    outputs: List<ExecutionOutputEntity>
+) {
+    val deviceName = device?.nickName ?: "-ERROR-"
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+
+            // ---- Device title ----
+            Text(
+                text = deviceName,
+                style = MaterialTheme.typography.titleSmall
+            )
+
+            // ---- Output ----
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 260.dp) // important: prevents infinite growth
+            ) {
+                items(outputs) { output ->
+                    OutputRow(output)
                 }
             }
         }

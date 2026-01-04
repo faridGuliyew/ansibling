@@ -1,6 +1,9 @@
 package dev.faridg.ansibling.presentation.execute_ci
 
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import dev.faridg.ansibling.data.room.AppDatabase
+import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupEntity
 import dev.faridg.ansibling.data.room.entity.execution.ExecutionEntity
 import dev.faridg.ansibling.data.room.entity.execution.ExecutionOutputEntity
 import dev.faridg.ansibling.data.room.toDomain
@@ -15,8 +18,9 @@ class ExecutePlaybookViewModel(
     private val executionDao = AppDatabase.playbookExecutionDao
     private val deviceDao = AppDatabase.deviceDao
     private val variableDao = AppDatabase.variableDao
-    val execution : MutableStateFlow<ExecutionEntity?> = MutableStateFlow(null)
-    val outputs : MutableStateFlow<List<ExecutionOutputEntity>> = MutableStateFlow(emptyList())
+    val execution: MutableStateFlow<ExecutionEntity?> = MutableStateFlow(null)
+    val outputs: SnapshotStateMap<DeviceGroup?, SnapshotStateMap<Device?, SnapshotStateList<ExecutionOutputEntity>>> =
+        SnapshotStateMap()
     val progress: Flow<Float> = flowOf(0F)
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var executionId = -1L
@@ -26,7 +30,6 @@ class ExecutePlaybookViewModel(
         viewModelScope.launch {
             executionId = getExecutionId()
             observeExecutionStatus()
-            observeExecutionOutputs()
             startExecution()
         }
     }
@@ -35,16 +38,6 @@ class ExecutePlaybookViewModel(
         viewModelScope.launch {
             val variables = loadVariables()
             println("Executing playbook: $playbook")
-//            val playbook = if (playbook.actions.any { it.globalScriptId != null }) {
-//                val scripts = loadScripts()
-//                playbook.copy(
-//                    actions = playbook.actions.map {
-//                        if (it.globalScriptId == null) return@map it
-//
-//                        it.copy(title = scripts[it.globalScriptId]!!.title, content = scripts[it.globalScriptId]!!.content)
-//                    }
-//                )
-//            } else playbook
 
             try {
                 playbook.devices.forEach { target ->
@@ -52,6 +45,7 @@ class ExecutePlaybookViewModel(
                         is Device -> {
                             playbook.executeForDevice(
                                 device = target,
+                                group = null,
                                 variables = variables
                             )
                         }
@@ -62,6 +56,7 @@ class ExecutePlaybookViewModel(
                             devices.forEach { entity ->
                                 playbook.executeForDevice(
                                     device = entity.toDomain(),
+                                    group = target,
                                     variables = variables
                                 )
                             }
@@ -75,7 +70,9 @@ class ExecutePlaybookViewModel(
 
                 insertExecutionOutput(
                     type = StatusType.ERROR,
-                    output = e.message ?: "Unknown error"
+                    output = e.message ?: "Unknown error",
+                    device = null,
+                    group = null
                 )
             }
         }
@@ -83,6 +80,7 @@ class ExecutePlaybookViewModel(
 
     suspend fun Playbook.executeForDevice(
         device: Device,
+        group: DeviceGroup?,
         variables: MutableMap<String, String>
     ) {
         try {
@@ -90,13 +88,17 @@ class ExecutePlaybookViewModel(
 
             insertExecutionOutput(
                 type = StatusType.INFO,
-                output = "• Auth success for device: [${device.nickName}/${device.ip}]"
+                output = "• Auth success for device: [${device.nickName}/${device.ip}]",
+                group = group,
+                device = device
             )
 
             actions.forEach { action ->
                 insertExecutionOutput(
                     type = StatusType.INFO,
-                    output = "▶ Executing: ${action.title.ifBlank { "Script #${action.order}" }}"
+                    output = "▶ Executing: ${action.title.ifBlank { "Script #${action.order}" }}",
+                    group = group,
+                    device = device
                 )
                 // Execute command
                 try {
@@ -108,14 +110,18 @@ class ExecutePlaybookViewModel(
                     executor.executeCommand(command) { line, type ->
                         insertExecutionOutput(
                             type = type,
-                            output = line
+                            output = line,
+                            group = group,
+                            device = device
                         )
                     }
                 } catch (e: Exception) {
                     when (action.exceptionBehaviour) {
                         ExceptionBehavior.IGNORE -> insertExecutionOutput(
                             type = StatusType.WARNING,
-                            output = e.message ?: "Unknown error"
+                            output = e.message ?: "Unknown error",
+                            group = group,
+                            device = device
                         )
 
                         ExceptionBehavior.FAIL -> throw e // Re-throw the exception
@@ -127,50 +133,22 @@ class ExecutePlaybookViewModel(
         } catch (e: Exception) {
             insertExecutionOutput(
                 type = StatusType.ERROR,
-                output = e.message ?: "Unknown error"
+                output = e.message ?: "Unknown error",
+                group = group,
+                device = device
             )
         }
     }
 
-//    suspend fun executeAction(action: PlaybookAction) {
-//        val title = when (action) {
-//            is RemoteAction -> action.command.take(100)
-//            is Script -> TODO()
-//        }
-//        insertExecutionOutput(
-//            type = StatusType.INFO,
-//            output = "▶ Executing: ${action.command.take(100)}"
-//        )
-//        // Execute command
-//        try {
-//            // Render jinja template in case there is any.
-//            val command = when (action.commandType) {
-//                RemoteActionCommandType.PLAIN -> action.command
-//                RemoteActionCommandType.JINJA -> action.command.renderJinja(variables = variables)
-//            }
-//            executor.executeCommand(command) { line, type ->
-//                insertExecutionOutput(
-//                    type = type,
-//                    output = line
-//                )
-//            }
-//        } catch (e: Exception) {
-//            when (action.exceptionBehaviour) {
-//                ExceptionBehavior.IGNORE -> insertExecutionOutput(
-//                    type = StatusType.WARNING,
-//                    output = e.message ?: "Unknown error"
-//                )
-//
-//                ExceptionBehavior.FAIL -> throw e // Re-throw the exception
-//            }
-//        }
-//    }
-
-    private suspend fun insertExecutionOutput(
+    private fun insertExecutionOutput(
         type: StatusType,
-        output: String
+        output: String,
+        group: DeviceGroup?,
+        device: Device?
     ) {
-        executionDao.insertExecutionOutput(
+        val groupDevices = outputs.getOrPut(group) { SnapshotStateMap() }
+        val deviceOutputs = groupDevices.getOrPut(device) { SnapshotStateList() }
+        deviceOutputs.add(
             ExecutionOutputEntity(
                 executionId = executionId,
                 output = output,
@@ -204,7 +182,7 @@ class ExecutePlaybookViewModel(
             .map { it.toDomain() }.associateBy { it.scriptId }
     }
 
-    private suspend fun getExecutionId() : Long {
+    private suspend fun getExecutionId(): Long {
         return AppDatabase.playbookExecutionDao.insertExecution(
             ExecutionEntity(
                 playbookId = playbook.id,
@@ -217,13 +195,6 @@ class ExecutePlaybookViewModel(
         viewModelScope.launch {
             AppDatabase.playbookExecutionDao.observeExecution(executionId).collectLatest { newExecution ->
                 execution.update { newExecution }
-            }
-        }
-    }
-    private fun observeExecutionOutputs() {
-        viewModelScope.launch {
-            AppDatabase.playbookExecutionDao.observeOutputs(executionId).collectLatest { newOutputs ->
-                outputs.update { newOutputs }
             }
         }
     }
