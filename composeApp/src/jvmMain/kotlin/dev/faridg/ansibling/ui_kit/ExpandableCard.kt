@@ -2,6 +2,7 @@ package dev.faridg.ansibling.ui_kit
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,15 +21,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import ansibling.composeapp.generated.resources.Res
 import ansibling.composeapp.generated.resources.ic_arrow_down
 import org.jetbrains.compose.resources.painterResource
 
+object ExpandableCardDefaults {
+    val borderStroke = BorderStroke(0.dp, Color.Transparent)
+}
+
 @Composable
-fun ExpandableContent(
+fun ExpandableCard(
     isExpanded: Boolean = false,
+    border: BorderStroke = ExpandableCardDefaults.borderStroke,
     title: @Composable () -> Unit,
     content: @Composable () -> Unit
 ) {
@@ -37,7 +44,9 @@ fun ExpandableContent(
         targetValue = if (isExpanded) 180f else 0f,
     )
 
-    Card {
+    Card (
+        border = border
+    ) {
         Column (modifier = Modifier.padding(16.dp)) {
             Row (
                 verticalAlignment = Alignment.CenterVertically,

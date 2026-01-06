@@ -25,7 +25,7 @@ import dev.faridg.ansibling.data.room.entity.playbook.entity.PlaybookGlobalScrip
 import dev.faridg.ansibling.data.room.toDomain
 import dev.faridg.ansibling.data.room.toEntity
 import dev.faridg.ansibling.domain.*
-import dev.faridg.ansibling.ui_kit.ExpandableContent
+import dev.faridg.ansibling.ui_kit.ExpandableCard
 import dev.faridg.ansibling.ui_kit.device.DeviceItem
 import dev.faridg.ansibling.ui_kit.device_group.DeviceGroupItem
 import dev.faridg.ansibling.ui_kit.script.ScriptItem
@@ -87,7 +87,7 @@ fun EditPlaybookScreen(
         )
 
         // == ADD DEVICE SECTION START ==
-        ExpandableContent(
+        ExpandableCard(
             title = {
                 Text(text = "Added devices (${playbookUiModel.devices.size})")
             }
@@ -118,7 +118,7 @@ fun EditPlaybookScreen(
             }
         }
 
-        ExpandableContent(
+        ExpandableCard(
             title = {
                 Text(text = "All devices")
             }
@@ -157,7 +157,7 @@ fun EditPlaybookScreen(
             }
         }
         // == ADD DEVICE SECTION END ==
-        ExpandableContent(
+        ExpandableCard(
             title = {
                 Text(text = "Added scripts (${playbookUiModel.scripts.size})")
             }
@@ -179,7 +179,7 @@ fun EditPlaybookScreen(
             }
         }
 
-        ExpandableContent(
+        ExpandableCard(
             title = {
                 Text(text = "All scripts")
             }

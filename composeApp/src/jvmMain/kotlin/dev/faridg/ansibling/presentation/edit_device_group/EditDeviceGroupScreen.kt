@@ -32,7 +32,7 @@ import dev.faridg.ansibling.data.room.entity.device_group.DeviceGroupRelationEnt
 import dev.faridg.ansibling.data.room.toDomain
 import dev.faridg.ansibling.domain.Device
 import dev.faridg.ansibling.domain.DeviceGroup
-import dev.faridg.ansibling.ui_kit.ExpandableContent
+import dev.faridg.ansibling.ui_kit.ExpandableCard
 import dev.faridg.ansibling.ui_kit.device.DeviceItem
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -69,7 +69,7 @@ fun EditDeviceGroupScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        ExpandableContent(
+        ExpandableCard(
             title = {
                 Text(text = "Added devices (${uiModel.devices.size})")
             }
@@ -89,7 +89,7 @@ fun EditDeviceGroupScreen(
             }
         }
 
-        ExpandableContent(
+        ExpandableCard(
             title = {
                 Text(text = "All devices")
             }
